@@ -25,6 +25,7 @@ def train(
     learning_rate
 ):
     now = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
+    # now = '2023_06_11_22_48_19'
     checkpoint_name = f'{net_name}_{now}'
     writer = SummaryWriter(f'runs/{checkpoint_name}')
     
@@ -48,15 +49,26 @@ def train(
     criterion = nn.CrossEntropyLoss()
     metric_miou = MIoUScore(n_class=n_class)
 
+    epoch_init = 0
     validation_score_max = 0
 
+    # initializing checkpoint
     checkpoints_dir = f'checkpoints/{net_name}'
 
     if not os.path.exists(checkpoints_dir): os.makedirs(checkpoints_dir)
 
     checkpoint_filedir = f'{checkpoints_dir}/{checkpoint_name}.pt'
 
-    for epoch in tqdm(range(1, n_epoch + 1)):        
+    if os.path.exists(checkpoint_filedir):
+        checkpoint = torch.load(checkpoint_filedir)
+
+        net.load_state_dict(checkpoint['net_state_dict'])
+        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+
+        epoch_init = checkpoint['epoch']
+        validation_score_max = checkpoint['validation_score_max']
+
+    for epoch in tqdm(range(epoch_init + 1, n_epoch + 1)):        
         # training
         net.train()
 
@@ -136,13 +148,10 @@ def train(
                 print(f'validation score: {validation_score: .4f}')
 
                 torch.save(
-                    {'epoch': epoch,
-                     'state_dict': net.state_dict(),
+                    {'net_state_dict': net.state_dict(),
                      'optimizer_state_dict': optimizer.state_dict(),
-                     'train_loss': train_loss,
-                     'train_score': train_score,
-                     'validation_loss': validation_loss,
-                     'validation_score': validation_score},
+                     'epoch': epoch,
+                     'validation_score_max': validation_score_max},
                     checkpoint_filedir
                 )
 
