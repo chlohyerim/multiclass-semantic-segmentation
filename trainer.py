@@ -9,7 +9,7 @@ import os
 from tqdm import tqdm
 
 from dataset import SegmentationDataset
-from metrics.miou_score import MIoUScore
+from metrics import MIoU, FwIoU
 import net_selector
 
 
@@ -47,7 +47,8 @@ def train(
     )
 
     criterion = nn.CrossEntropyLoss()
-    metric_miou = MIoUScore(n_class=n_class)
+    # metric_miou = MIoU(n_class=n_class)
+    metric_fwiou = FwIoU(n_class=n_class)
 
     epoch_init = 0
     validation_score_max = 0
@@ -72,8 +73,9 @@ def train(
         # training
         net.train()
 
-        running_loss = 0
-        score_miou = 0
+        loss_sum = 0
+        # score_miou_sum = 0
+        score_fwiou_sum = 0
 
         for _, batch in enumerate(train_dataloader):
             img = batch['img'].to(device=device, dtype=torch.float32)
@@ -87,19 +89,23 @@ def train(
             class_gt = torch.zeros_like(maxval_gt)
 
             for i in range(n_class): class_gt[maxval_gt == chunk_gt[i]] = i
+
+            class_gt = class_gt.squeeze(dim=1)
             
-            loss = criterion(logit_pred, class_gt.squeeze(dim=1))
-            running_loss += loss.item()
+            loss = criterion(logit_pred, class_gt)
+            loss_sum += loss.item()
 
             class_pred = torch.argmax(logit_pred, dim=1).to(torch.float)
-            score_miou += metric_miou(class_pred, class_gt.squeeze(1)).item()
+            # score_miou_sum += metric_miou(class_pred, class_gt).item()
+            score_fwiou_sum += metric_fwiou(class_pred, class_gt).item()
             
             optimizer.zero_grad(set_to_none=True)
             loss.backward()
             optimizer.step()
 
-        train_loss = running_loss / len(train_dataloader)
-        train_score = score_miou / len(train_dataloader)
+        train_loss = loss_sum / len(train_dataloader)
+        # train_score = score_miou_sum / len(train_dataloader)
+        train_score = score_fwiou_sum / len(train_dataloader)
 
         writer.add_scalar('training loss/epoch', train_loss, epoch)
         writer.add_scalar('training score/epoch', train_score, epoch)
@@ -108,8 +114,9 @@ def train(
         net.eval()
 
         with torch.no_grad():
-            running_loss = 0
-            score_miou = 0
+            loss_sum = 0
+            # score_miou_sum = 0
+            score_fwiou_sum = 0
 
             for _, batch in enumerate(validation_dataloader):
                 img = batch['img'].to(device=device, dtype=torch.float32)
@@ -124,14 +131,18 @@ def train(
 
                 for i in range(n_class): class_gt[maxval_gt == chunk_gt[i]] = i
 
-                loss = criterion(logit_pred, class_gt.squeeze(dim=1))
-                running_loss += loss.item()
+                class_gt = class_gt.squeeze(dim=1)
+
+                loss = criterion(logit_pred, class_gt)
+                loss_sum += loss.item()
                 
                 class_pred = torch.argmax(logit_pred, dim=1).to(torch.float)
-                score_miou += metric_miou(class_pred, class_gt.squeeze(1)).item()
+                # score_miou_sum += metric_miou(class_pred, class_gt).item()
+                score_fwiou_sum += metric_fwiou(class_pred, class_gt).item()
 
-            validation_loss = running_loss / len(validation_dataloader)
-            validation_score = score_miou / len(validation_dataloader)
+            validation_loss = loss_sum / len(validation_dataloader)
+            # validation_score = score_miou_sum / len(validation_dataloader)
+            validation_score = score_fwiou_sum / len(validation_dataloader)
 
             # update model to save if maximum test score is updated
             if validation_score > validation_score_max:
@@ -159,7 +170,7 @@ def train(
 # main function
 if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    net_name = 'unet'
+    net_name = 'attention_unet'
     n_class = 3
     cout_encoder1 = 32
 

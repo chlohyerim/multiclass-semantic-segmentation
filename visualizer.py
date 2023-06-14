@@ -1,13 +1,16 @@
-import os
-
 import cv2
 import numpy as np
+import os
 import matplotlib.pyplot as plt
 
 
 def visualize(
     suptitle,
     displays,
+    loss,
+    score_acc,
+    score_miou,
+    score_fwiou,
     column_titles,
     output_dir,
     output_name
@@ -16,7 +19,7 @@ def visualize(
 
     n_row = len(displays[0])
     n_column = len(column_titles)
-    fig = plt.figure(figsize=(3 * n_column, 3 * n_row))
+    fig = plt.figure(figsize=(4 * n_column, 5 * n_row))
 
     fig.suptitle(suptitle)
 
@@ -29,6 +32,17 @@ def visualize(
             display_np = displays[j][i].detach().cpu().numpy()
             display_np = np.transpose(display_np, (1, 2, 0))
             display_np = cv2.cvtColor(display_np, cv2.COLOR_BGR2RGB)
+
+            if j == 2:
+                textstr = '\n'.join((
+                    f'CE loss={loss: .4f}',
+                    f'Accuracy={score_acc: .4f}',
+                    f'mIoU={score_miou: .4f}',
+                    f'fwIoU={score_fwiou: .4f}'
+                ))
+                # textstr = f'CE loss={loss: .4f}\nfwIoU={score_fwiou: .4f}'
+                bbox_props = dict(boxstyle='round', facecolor='white', alpha=0.5)
+                ax.text(0.6, 1.4, textstr, transform=ax.transAxes, fontsize=12, verticalalignment='top', bbox=bbox_props)
 
             ax.imshow(display_np)
             ax.axis('off')

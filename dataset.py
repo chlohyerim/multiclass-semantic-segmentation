@@ -100,7 +100,7 @@ class SegmentationDataset(torch.utils.data.Dataset):
         if (self.is_train):
             img = Preprocessor.T_img(img)
 
-        return {'img': img, 'gt': gt}
+        return {'name': name, 'img': img, 'gt': gt}
     
 
 # main function
@@ -129,6 +129,10 @@ if __name__ == '__main__':
         visualizer.visualize(
             suptitle=f'Image Augmentation({i + 1} of {n_batch})',
             displays=[img, gt.squeeze(dim=1).to(torch.float)],
+            loss=None,
+            score_acc=None,
+            score_miou=None,
+            score_fwiou=None,
             column_titles=['img', 'gt'],
             output_dir='data/output/aug',
             output_name=f'aug_{i + 1}'
