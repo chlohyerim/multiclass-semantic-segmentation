@@ -33,7 +33,7 @@ def evaluate(
 
     checkpoint = torch.load(checkpoint_filedir)
 
-    net.load_state_dict(checkpoint['state_dict'])
+    net.load_state_dict(checkpoint['net_state_dict'])
 
     dataloader = DataLoader(
         dataset=dataset,
@@ -55,6 +55,8 @@ def evaluate(
     score_miou_sum = 0
     score_fwiou_sum = 0
     n_batch = len(dataloader)
+
+    print(suptitle)
 
     net.eval()
 
@@ -78,17 +80,17 @@ def evaluate(
         loss_sum += loss.item()
 
         # metrics
-        logit_pred = torch.argmax(logit_pred, dim=1).to(torch.float)
-        score_acc = metric_acc(logit_pred, class_gt)
+        class_pred = torch.argmax(logit_pred, dim=1).to(torch.float)
+        score_acc = metric_acc(class_pred, class_gt)
         score_acc_sum += score_acc.item()
-        score_miou = metric_miou(logit_pred, class_gt)
+        score_miou = metric_miou(class_pred, class_gt)
         score_miou_sum += score_miou.item()
-        score_fwiou = metric_fwiou(logit_pred, class_gt)
+        score_fwiou = metric_fwiou(class_pred, class_gt)
         score_fwiou_sum += score_fwiou.item()
 
         pred = torch.zeros_like(gt)
 
-        for j in range(n_class): pred[:, j] = (logit_pred == j).type(torch.uint8)
+        for j in range(n_class): pred[:, j] = (class_pred == j).type(torch.uint8)
 
         pred_mask = pred[0].to(torch.float).detach().cpu().numpy()
         pred_mask = np.transpose(pred_mask, (1, 2, 0))
@@ -108,11 +110,11 @@ def evaluate(
             output_name=f'{output_name}_{i + 1}'
         )
 
-    print(f'loss (avg.) : {loss_sum / len(dataloader): .4f}')
-    print(f'accuracy (avg.): {score_acc_sum / len(dataloader): .4f}')
-    print(f'miou (avg.): {score_miou_sum / len(dataloader): .4f}')
-    print(f'fwiou score (avg.): {score_fwiou_sum / len(dataloader): .4f}')
-    print('------------------------------------------------')
+    print(f'loss:     {loss_sum / len(dataloader): .4f}')
+    print(f'accuracy: {score_acc_sum / len(dataloader): .4f}')
+    print(f'mIoU:     {score_miou_sum / len(dataloader): .4f}')
+    print(f'fwIoU:    {score_fwiou_sum / len(dataloader): .4f}')
+    print('----')
 
 
 # main function
@@ -122,8 +124,9 @@ if __name__ == '__main__':
     net_name = 'attention_unet'
     n_class = 3
     cout_encoder1 = 32
+    padding_mode = 'same'
 
-    net = net_selector.nets_dict[net_name].Net(n_class, cout_encoder1).to(device)
+    net = net_selector.nets_dict[net_name].Net(n_class, cout_encoder1, padding_mode).to(device)
 
     train_dataset = SegmentationDataset(
         img_dir='data/train/img',
@@ -136,21 +139,27 @@ if __name__ == '__main__':
         gt_dir='data/test/gt',
         is_train=False
     )
+
+    print('----')
     
     for checkpoint in os.listdir(f'checkpoints/{net_name}'):
         checkpoint_name = checkpoint[:-3]
 
-        # evaluate(
-        #     device=device,
-        #     net=net,
-        #     net_name=net_name,
-        #     checkpoint_name=checkpoint_name,
-        #     dataset=train_dataset,
-        #     n_class=3,
-        #     suptitle='Inference at Training Data',
-        #     output_dir=f'data/output/{checkpoint_name}',
-        #     output_name='train'
-        # )
+        print(f'Evaluation of \'{checkpoint}\'')
+        print('----')
+
+
+        evaluate(
+            device=device,
+            net=net,
+            net_name=net_name,
+            checkpoint_name=checkpoint_name,
+            dataset=train_dataset,
+            n_class=n_class,
+            suptitle='Inference at Training Dataset',
+            output_dir=f'data/output/{checkpoint_name}',
+            output_name='train'
+        )
 
         evaluate(
             device=device,
@@ -158,8 +167,8 @@ if __name__ == '__main__':
             checkpoint_name=checkpoint_name,
             net_name=net_name,
             dataset=test_dataset,
-            n_class=3,
-            suptitle='Inference at Test Data',
+            n_class=n_class,
+            suptitle='Inference at Test Dataset',
             output_dir=f'data/output/{checkpoint_name}',
             output_name='test'
         )

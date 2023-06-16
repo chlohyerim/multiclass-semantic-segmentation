@@ -25,7 +25,7 @@ def train(
     learning_rate
 ):
     now = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
-    # now = '2023_06_11_22_48_19'
+    # now = '2023_06_14_23_55_49'
     checkpoint_name = f'{net_name}_{now}'
     writer = SummaryWriter(f'runs/{checkpoint_name}')
     
@@ -194,7 +194,7 @@ if __name__ == '__main__':
         net_name=net_name,
         train_dataset=train_dataset,
         validation_dataset=validation_dataset,
-        n_class=3,
+        n_class=n_class,
         n_epoch=2000,
         batch_size=8,
         learning_rate=1e-4
