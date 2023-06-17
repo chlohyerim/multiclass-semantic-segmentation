@@ -6,33 +6,33 @@ from nets import blocks
 
 # 모델 구성
 class Net(nn.Module):
-    def __init__(self, n_class, cout_encoder1):
+    def __init__(self, n_class, c_x1, padding_mode):
         super(Net, self).__init__()
 
         self.maxpool = nn.MaxPool2d(kernel_size=2, stride=2)
 
-        self.encoder1 = blocks.DoubleConvBlock(in_channels=3, out_channels=cout_encoder1)
-        self.encoder2 = blocks.DoubleConvBlock(in_channels=cout_encoder1, out_channels=cout_encoder1 * 2)
-        self.encoder3 = blocks.DoubleConvBlock(in_channels=cout_encoder1 * 2, out_channels=cout_encoder1 * 4)
-        self.encoder4 = blocks.DoubleConvBlock(in_channels=cout_encoder1 * 4, out_channels=cout_encoder1 * 8)
-        self.encoder5 = blocks.DoubleConvBlock(in_channels=cout_encoder1 * 8, out_channels=cout_encoder1 * 16)
+        self.encoder1 = blocks.DoubleConvBlock(c_in=3, c_out=c_x1, padding_mode=padding_mode)
+        self.encoder2 = blocks.DoubleConvBlock(c_in=c_x1, c_out=c_x1 * 2, padding_mode=padding_mode)
+        self.encoder3 = blocks.DoubleConvBlock(c_in=c_x1 * 2, c_out=c_x1 * 4, padding_mode=padding_mode)
+        self.encoder4 = blocks.DoubleConvBlock(c_in=c_x1 * 4, c_out=c_x1 * 8, padding_mode=padding_mode)
+        self.encoder5 = blocks.DoubleConvBlock(c_in=c_x1 * 8, c_out=c_x1 * 16, padding_mode=padding_mode)
 
-        self.decoder5 = blocks.DoubleConvBlock(in_channels=cout_encoder1 * 16, out_channels=cout_encoder1 * 8)
-        self.decoder4 = blocks.DoubleConvBlock(in_channels=cout_encoder1 * 8, out_channels=cout_encoder1 * 4)
-        self.decoder3 = blocks.DoubleConvBlock(in_channels=cout_encoder1 * 4, out_channels=cout_encoder1 * 2)
-        self.decoder2 = blocks.DoubleConvBlock(in_channels=cout_encoder1 * 2, out_channels=cout_encoder1)
+        self.decoder5 = blocks.DoubleConvBlock(c_in=c_x1 * 16, c_out=c_x1 * 8, padding_mode=padding_mode)
+        self.decoder4 = blocks.DoubleConvBlock(c_in=c_x1 * 8, c_out=c_x1 * 4, padding_mode=padding_mode)
+        self.decoder3 = blocks.DoubleConvBlock(c_in=c_x1 * 4, c_out=c_x1 * 2, padding_mode=padding_mode)
+        self.decoder2 = blocks.DoubleConvBlock(c_in=c_x1 * 2, c_out=c_x1, padding_mode=padding_mode)
 
-        self.upconv5 = nn.ConvTranspose2d(in_channels=cout_encoder1 * 16, out_channels=cout_encoder1 * 8, kernel_size=2, stride=2)
-        self.upconv4 = nn.ConvTranspose2d(in_channels=cout_encoder1 * 8, out_channels=cout_encoder1 * 4, kernel_size=2, stride=2)
-        self.upconv3 = nn.ConvTranspose2d(in_channels=cout_encoder1 * 4, out_channels=cout_encoder1 * 2, kernel_size=2, stride=2)
-        self.upconv2 = nn.ConvTranspose2d(in_channels=cout_encoder1 * 2, out_channels=cout_encoder1, kernel_size=2, stride=2)
+        self.upconv5 = nn.ConvTranspose2d(in_channels=c_x1 * 16, out_channels=c_x1 * 8, kernel_size=2, stride=2)
+        self.upconv4 = nn.ConvTranspose2d(in_channels=c_x1 * 8, out_channels=c_x1 * 4, kernel_size=2, stride=2)
+        self.upconv3 = nn.ConvTranspose2d(in_channels=c_x1 * 4, out_channels=c_x1 * 2, kernel_size=2, stride=2)
+        self.upconv2 = nn.ConvTranspose2d(in_channels=c_x1 * 2, out_channels=c_x1, kernel_size=2, stride=2)
 
-        self.attention5 = blocks.AttentionGate(in_channels=cout_encoder1 * 8, attention_channels=cout_encoder1 * 4)
-        self.attention4 = blocks.AttentionGate(in_channels=cout_encoder1 * 4, attention_channels=cout_encoder1 * 2)
-        self.attention3 = blocks.AttentionGate(in_channels=cout_encoder1 * 2, attention_channels=cout_encoder1)
-        self.attention2 = blocks.AttentionGate(in_channels=cout_encoder1, attention_channels=cout_encoder1 // 2)
+        self.attention5 = blocks.AttentionGate(c_in=c_x1 * 8, c_att=c_x1 * 4)
+        self.attention4 = blocks.AttentionGate(c_in=c_x1 * 4, c_att=c_x1 * 2)
+        self.attention3 = blocks.AttentionGate(c_in=c_x1 * 2, c_att=c_x1)
+        self.attention2 = blocks.AttentionGate(c_in=c_x1, c_att=c_x1 // 2)
 
-        self.fconv = nn.Conv2d(in_channels=cout_encoder1, out_channels=n_class, kernel_size=1)
+        self.fconv = nn.Conv2d(in_channels=c_x1, out_channels=n_class, kernel_size=1)
 
         self.init_weights()
 

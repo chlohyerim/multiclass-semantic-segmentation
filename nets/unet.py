@@ -11,16 +11,16 @@ class Net(nn.Module):
 
         self.maxpool = nn.MaxPool2d(kernel_size=2, stride=2)
 
-        self.encoder1 = blocks.DoubleConvBlock(in_channels=3, out_channels=cout_encoder1)
-        self.encoder2 = blocks.DoubleConvBlock(in_channels=cout_encoder1, out_channels=cout_encoder1 * 2)
-        self.encoder3 = blocks.DoubleConvBlock(in_channels=cout_encoder1 * 2, out_channels=cout_encoder1 * 4)
-        self.encoder4 = blocks.DoubleConvBlock(in_channels=cout_encoder1 * 4, out_channels=cout_encoder1 * 8)
-        self.encoder5 = blocks.DoubleConvBlock(in_channels=cout_encoder1 * 8, out_channels=cout_encoder1 * 16)
+        self.encoder1 = blocks.DoubleConvBlock(c_in=3, c_out=cout_encoder1)
+        self.encoder2 = blocks.DoubleConvBlock(c_in=cout_encoder1, c_out=cout_encoder1 * 2)
+        self.encoder3 = blocks.DoubleConvBlock(c_in=cout_encoder1 * 2, c_out=cout_encoder1 * 4)
+        self.encoder4 = blocks.DoubleConvBlock(c_in=cout_encoder1 * 4, c_out=cout_encoder1 * 8)
+        self.encoder5 = blocks.DoubleConvBlock(c_in=cout_encoder1 * 8, c_out=cout_encoder1 * 16)
 
-        self.decoder5 = blocks.DoubleConvBlock(in_channels=cout_encoder1 * 16, out_channels=cout_encoder1 * 8)
-        self.decoder4 = blocks.DoubleConvBlock(in_channels=cout_encoder1 * 8, out_channels=cout_encoder1 * 4)
-        self.decoder3 = blocks.DoubleConvBlock(in_channels=cout_encoder1 * 4, out_channels=cout_encoder1 * 2)
-        self.decoder2 = blocks.DoubleConvBlock(in_channels=cout_encoder1 * 2, out_channels=cout_encoder1)
+        self.decoder5 = blocks.DoubleConvBlock(c_in=cout_encoder1 * 16, c_out=cout_encoder1 * 8)
+        self.decoder4 = blocks.DoubleConvBlock(c_in=cout_encoder1 * 8, c_out=cout_encoder1 * 4)
+        self.decoder3 = blocks.DoubleConvBlock(c_in=cout_encoder1 * 4, c_out=cout_encoder1 * 2)
+        self.decoder2 = blocks.DoubleConvBlock(c_in=cout_encoder1 * 2, c_out=cout_encoder1)
 
         self.upconv5 = nn.ConvTranspose2d(in_channels=cout_encoder1 * 16, out_channels=cout_encoder1 * 8, kernel_size=2, stride=2)
         self.upconv4 = nn.ConvTranspose2d(in_channels=cout_encoder1 * 8, out_channels=cout_encoder1 * 4, kernel_size=2, stride=2)

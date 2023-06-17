@@ -20,13 +20,14 @@ def train(
     train_dataset,
     validation_dataset,
     n_class,
+    padding_mode,
     n_epoch,
     batch_size,
     learning_rate
 ):
     now = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
     # now = '2023_06_14_23_55_49'
-    checkpoint_name = f'{net_name}_{now}'
+    checkpoint_name = f'{net_name}_{padding_mode}_{now}'
     writer = SummaryWriter(f'runs/{checkpoint_name}')
     
     train_dataloader = DataLoader(
@@ -172,9 +173,10 @@ if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     net_name = 'attention_unet'
     n_class = 3
-    cout_encoder1 = 32
+    c_x1 = 32
+    padding_mode = 'replicate'
 
-    net = net_selector.nets_dict[net_name].Net(n_class, cout_encoder1).to(device)
+    net = net_selector.nets_dict[net_name].Net(n_class, c_x1, padding_mode).to(device)
 
     train_dataset = SegmentationDataset(
         img_dir='data/train/img',
@@ -195,6 +197,7 @@ if __name__ == '__main__':
         train_dataset=train_dataset,
         validation_dataset=validation_dataset,
         n_class=n_class,
+        padding_mode=padding_mode,
         n_epoch=2000,
         batch_size=8,
         learning_rate=1e-4

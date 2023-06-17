@@ -123,10 +123,10 @@ if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     net_name = 'attention_unet'
     n_class = 3
-    cout_encoder1 = 32
-    padding_mode = 'same'
+    c_x1 = 32
+    padding_mode = 'zeros'
 
-    net = net_selector.nets_dict[net_name].Net(n_class, cout_encoder1, padding_mode).to(device)
+    net = net_selector.nets_dict[net_name].Net(n_class, c_x1, padding_mode).to(device)
 
     train_dataset = SegmentationDataset(
         img_dir='data/train/img',

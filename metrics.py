@@ -69,6 +69,6 @@ class FwIoU(nn.Module):
             total = torch.sum(class_pred[:] == i) + torch.sum(class_gt[:] == i)
             union = total - intersection
 
-            fwiou += ( total / (2 * class_gt.shape[0]) ) * ( (intersection + self.eps) / (union + self.eps) )
+            fwiou += ( torch.sum(class_gt[:] == i) / class_gt.shape[0] ) * ( (intersection + self.eps) / (union + self.eps) )
         
         return fwiou

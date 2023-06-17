@@ -40,7 +40,6 @@ def visualize(
                     f'mIoU={score_miou: .4f}',
                     f'fwIoU={score_fwiou: .4f}'
                 ))
-                # textstr = f'CE loss={loss: .4f}\nfwIoU={score_fwiou: .4f}'
                 bbox_props = dict(boxstyle='round', facecolor='white', alpha=0.5)
                 ax.text(0.6, 1.4, textstr, transform=ax.transAxes, fontsize=12, verticalalignment='top', bbox=bbox_props)
 
