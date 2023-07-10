@@ -148,7 +148,6 @@ if __name__ == '__main__':
         print(f'Evaluation of \'{checkpoint}\'')
         print('----')
 
-
         evaluate(
             device=device,
             net=net,

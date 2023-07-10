@@ -171,10 +171,10 @@ def train(
 # main function
 if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    net_name = 'attention_unet'
+    net_name = 'unet'
     n_class = 3
     c_x1 = 32
-    padding_mode = 'replicate'
+    padding_mode = 'zeros'
 
     net = net_selector.nets_dict[net_name].Net(n_class, c_x1, padding_mode).to(device)
 
@@ -199,6 +199,6 @@ if __name__ == '__main__':
         n_class=n_class,
         padding_mode=padding_mode,
         n_epoch=2000,
-        batch_size=8,
+        batch_size=4,
         learning_rate=1e-4
     )

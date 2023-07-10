@@ -19,8 +19,8 @@ class SegmentationDataset(torch.utils.data.Dataset):
     def __init__(self, img_dir, gt_dir, is_train):
         self.img_dir = img_dir
         self.gt_dir = gt_dir
-        self.names = [splitext(file)[0] for file in listdir(img_dir)]
         self.is_train = is_train
+        self.names = [splitext(file)[0] for file in listdir(img_dir)]
 
 
     def __len__(self):

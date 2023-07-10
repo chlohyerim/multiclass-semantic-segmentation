@@ -27,10 +27,10 @@ class Net(nn.Module):
         self.upconv3 = nn.ConvTranspose2d(in_channels=c_x1 * 4, out_channels=c_x1 * 2, kernel_size=2, stride=2)
         self.upconv2 = nn.ConvTranspose2d(in_channels=c_x1 * 2, out_channels=c_x1, kernel_size=2, stride=2)
 
-        self.attention5 = blocks.AttentionGate(c_in=c_x1 * 8, c_att=c_x1 * 4)
-        self.attention4 = blocks.AttentionGate(c_in=c_x1 * 4, c_att=c_x1 * 2)
-        self.attention3 = blocks.AttentionGate(c_in=c_x1 * 2, c_att=c_x1)
-        self.attention2 = blocks.AttentionGate(c_in=c_x1, c_att=c_x1 // 2)
+        self.attention5 = blocks.AttentionGate(c_in=c_x1 * 8, c_att=c_x1 * 8)
+        self.attention4 = blocks.AttentionGate(c_in=c_x1 * 4, c_att=c_x1 * 4)
+        self.attention3 = blocks.AttentionGate(c_in=c_x1 * 2, c_att=c_x1 * 2)
+        self.attention2 = blocks.AttentionGate(c_in=c_x1, c_att=c_x1)
 
         self.fconv = nn.Conv2d(in_channels=c_x1, out_channels=n_class, kernel_size=1)
 

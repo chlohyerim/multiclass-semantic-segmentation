@@ -22,6 +22,21 @@ class Preprocessor:
     def flipHorizontal(src): return cv2.flip(src, 1)
 
 
+    def perspective(src, pts_src, is_gt):
+        h, w = src.shape[:2]
+        pts_dst = np.float32(
+            [[0, 0],
+             [w - 1, 0],
+             [w - 1, h - 1],
+             [0, h - 1]]
+        )
+        M = cv2.getPerspectiveTransform(pts_src, pts_dst)
+
+        dst = cv2.warpPerspective(src, M, (w, h))
+
+        return Preprocessor.interpolateGt(dst) if is_gt else dst
+
+
     def resizedcrop(src, scale, w_scaled, h_scaled, x, y, is_gt):
         h, w = src.shape[:2]
 
@@ -40,31 +55,16 @@ class Preprocessor:
 
     def rotate(src, angle, w_scaled, h_scaled, is_gt):
         h, w = src.shape[:2]
-        border_y = (h_scaled - h) // 2
-        border_x = (w_scaled - w) // 2
+        y = (h_scaled - h) // 2
+        x = (w_scaled - w) // 2
 
-        dst = cv2.copyMakeBorder(src, top=border_y, bottom=border_y, left=border_x, right=border_x, borderType=cv2.BORDER_REFLECT)
+        dst = cv2.copyMakeBorder(src, top=y, bottom=y, left=x, right=x, borderType=cv2.BORDER_REFLECT)
 
         M = cv2.getRotationMatrix2D(center=(int(w_scaled / 2), int(h_scaled / 2)), angle=angle, scale=1)
 
         dst = cv2.warpAffine(dst, M, (w_scaled, h_scaled))
-        dst = dst[border_y:(border_y+h), border_x:(border_x+w)]
+        dst = dst[y:(y + h), x:(x + w)]
         
-        return Preprocessor.interpolateGt(dst) if is_gt else dst
-    
-
-    def perspective(src, pts_src, is_gt):
-        h, w = src.shape[:2]
-        pts_dst = np.float32(
-            [[0, 0],
-             [w - 1, 0],
-             [w - 1, h - 1],
-             [0, h - 1]]
-        )
-        M = cv2.getPerspectiveTransform(pts_src, pts_dst)
-
-        dst = cv2.warpPerspective(src, M, (w, h))
-
         return Preprocessor.interpolateGt(dst) if is_gt else dst
     
 
